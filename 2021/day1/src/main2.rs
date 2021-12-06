@@ -1,23 +1,31 @@
 use std::io::{self, BufRead};
 
-fn main() -> Result<(), ()>{
-    let (prev, start): (Option<u32>, Result<u32, ()>) = (None, Ok(0));
-    let res = io::stdin().lock().lines()
+fn main() -> Result<(), ()> {
+    let (prev, start): (Option<i32>, i32) = (None, 0);
+    let stdin = io::stdin();
+    let lines = stdin.lock().lines();
+    let lines: Vec<io::Result<String>> = lines.collect();
+    let windows = lines.windows(3);
+    let sums = windows.map(|trip| {
+        let sum: i32 = trip.iter().map(|single_str| {
+            let single_str = single_str.as_ref().unwrap();
+            single_str.parse::<i32>().unwrap()
+        }).sum();
+        sum
+    });
+    let res = sums
     .fold((prev, start), |(prev, res), cur_sweep| {
-        let cur_sweep = cur_sweep.unwrap().parse().ok();
+        let new_prev = Some(cur_sweep);
         match prev {
-            None => (cur_sweep, res),
+            None => (new_prev, res),
             Some(prev) => {
-                let new_prev = cur_sweep;
-                if let (Some(cur_sweep), Ok(res)) = (cur_sweep, res) {
-                    if cur_sweep > prev {
-                        return (new_prev, Ok(res + 1))
-                    }
+                if cur_sweep > prev {
+                    return (new_prev, res + 1)
                 }
                 (new_prev, res)
             }
         }
-    }).1?;
+    }).1;
     println!("{}", res);
     Ok(())
 }
