@@ -1,5 +1,4 @@
 use std::io::{self, BufRead};
-use bitvec::prelude::*;
 
 fn main() -> Result<(), ()>{
     let stdin = io::stdin();
@@ -15,15 +14,26 @@ fn main() -> Result<(), ()>{
         }
         line.chars().enumerate().fold(counts, |mut counts, (idx, c)| {
             if let Some(ref mut counts) = counts {
-                counts[idx] += c.to_digit(10).unwrap();
+                counts[idx] += c.to_digit(2).unwrap();
             } else {
                 counts = Some(vec![0; len.unwrap()]);
             }
             counts
         })
     });
-    println!("{:?} {:?} {}", counts, len, num_lines);
-    // println!("ans = gamma * epsilon = {} * {} = {}", 
-    //          gamma, epsilon, gamma * epsilon);
+    if let Some(counts) = counts {
+        let half = num_lines / 2;
+        let bit_map = counts.iter().map(|count| {
+            count > &half
+        });
+        let gamma: u64 = bit_map.clone().fold(0, |gamma, bit| {
+            (gamma << 1) ^ u64::from(bit)
+        });
+        let epsilon: u64 = bit_map.fold(0, |gamma, bit| {
+            (gamma << 1) ^ u64::from(!bit)
+        });
+        println!("ans = gamma * epsilon = {} * {} = {}", 
+                 gamma, epsilon, gamma * epsilon);
+    }
     Ok(())
 }
