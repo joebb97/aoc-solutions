@@ -9,3 +9,4 @@ name = "day3pt2"
 path = "src/main2.rs"
 
 [dependencies]
+bitvec = "*"
