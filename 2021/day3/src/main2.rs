@@ -1,28 +1,39 @@
 use std::io::{self, BufRead};
 
 fn main() -> Result<(), ()>{
-    let (depth, horiz, aim) = (0, 0, 0);
-    let (depth, horiz, _) = io::stdin().lock().lines()
-    .fold((depth, horiz, aim), |(depth, horiz,  aim), line| {
-        let line = line.unwrap();
-        let line: Vec<&str> = line.split_whitespace().collect();
-        let (instr, amt): (&str, i32) = (line[0], line[1].parse().unwrap());
-        let new_aim = match instr {
-            "up" => aim - amt,
-            "down" => aim + amt,
-            _ => aim 
-        };
-        let new_horiz = match instr {
-            "forward" => horiz + amt,
-            _ => horiz
-        };
-        let new_depth = match instr {
-            "forward" => depth + (aim * amt),
-            _ => depth
-        };
-        (new_depth, new_horiz, new_aim)
+    let stdin = io::stdin();
+    let lines: Vec<_> = stdin.lock().lines().collect();
+    let mut num_lines = 0;
+    let mut len: Option<usize> = None;
+    let counts: Option<Vec<u32>> = lines
+    .iter().fold(None, |counts,  line| {
+        let line = line.as_ref().unwrap();
+        num_lines += 1;
+        if let None = len {
+            len = Some(line.len());
+        }
+        line.chars().enumerate().fold(counts, |mut counts, (idx, c)| {
+            if let Some(ref mut counts) = counts {
+                counts[idx] += c.to_digit(2).unwrap();
+            } else {
+                counts = Some(vec![0; len.unwrap()]);
+            }
+            counts
+        })
     });
-    println!("ans = depth * horiz = {} * {} = {}", 
-             depth, horiz, depth * horiz);
+    if let Some(counts) = counts {
+        let half = num_lines / 2;
+        let bit_map = counts.iter().map(|count| {
+            count > &half
+        });
+        // let gamma: u64 = bit_map.clone().fold(0, |gamma, bit| {
+        //     (gamma << 1) ^ u64::from(bit)
+        // });
+        // let epsilon: u64 = bit_map.fold(0, |gamma, bit| {
+        //     (gamma << 1) ^ u64::from(!bit)
+        // });
+        // println!("ans = gamma * epsilon = {} * {} = {}", 
+        //          gamma, epsilon, gamma * epsilon);
+    }
     Ok(())
 }
