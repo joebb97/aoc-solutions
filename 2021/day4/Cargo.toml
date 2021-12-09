@@ -1,0 +1,9 @@
+[package]
+name = "day3"
+version = "0.1.0"
+authors = ["Joseph Buiteweg <joebb@umich.edu>"]
+edition = "2018"
+
+[[bin]]
+name = "day3pt2"
+path = "src/main2.rs"
