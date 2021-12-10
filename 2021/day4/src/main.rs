@@ -1,8 +1,14 @@
 use std::io::{self, BufRead, StdinLock};
+
 #[derive(Debug)]
 struct Tile {
     datum: u8,
     called: bool,
+}
+
+struct Coord {
+    x: u32,
+    y: u32,
 }
 
 type Board = Vec<Vec<Tile>>;
@@ -50,8 +56,16 @@ fn get_boards(lines: std::io::Lines<StdinLock<'_>>) -> Boards {
             }
         })
         .all_boards;
-    println!("{:?}", boards[0]);
     return boards;
+}
+
+fn apply_moves(nums_called: Vec<u8>, boards: &mut Boards) -> (u32, u32) {
+    let (unmarked, winning_num) = (0, 0);
+    let new_boards = nums_called.iter().fold(boards, |cur_boards, num_called| {
+        cur_boards[0][0][0].called = true;
+        cur_boards
+    });
+    (unmarked, winning_num)
 }
 
 fn main() -> Result<(), ()> {
@@ -67,39 +81,9 @@ fn main() -> Result<(), ()> {
             num
         })
         .collect();
-    println!("{:?}", nums_called);
-    let boards = get_boards(lines);
-    // let mut num_lines = 0;
-    // let mut len: Option<usize> = None;
-    // let counts: Option<Vec<u32>> = lines
-    // .fold(None, |counts,  line| {
-    //     let line = line.unwrap();
-    //     num_lines += 1;
-    //     if let None = len {
-    //         len = Some(line.len());
-    //     }
-    //     line.chars().enumerate().fold(counts, |mut counts, (idx, c)| {
-    //         if let Some(ref mut counts) = counts {
-    //             counts[idx] += c.to_digit(2).unwrap();
-    //         } else {
-    //             counts = Some(vec![0; len.unwrap()]);
-    //         }
-    //         counts
-    //     })
-    // });
-    // if let Some(counts) = counts {
-    //     let half = num_lines / 2;
-    //     let bit_map = counts.iter().map(|count| {
-    //         count > &half
-    //     });
-    //     let gamma: u64 = bit_map.clone().fold(0, |gamma, bit| {
-    //         (gamma << 1) ^ u64::from(bit)
-    //     });
-    //     let epsilon: u64 = bit_map.fold(0, |gamma, bit| {
-    //         (gamma << 1) ^ u64::from(!bit)
-    //     });
-    //     println!("ans = gamma * epsilon = {} * {} = {}",
-    //              gamma, epsilon, gamma * epsilon);
-    // }
+    let mut boards = get_boards(lines);
+    let (unmarked, winning_num) = apply_moves(nums_called, &mut boards);
+    println!("ans = unmarked * winning_num = {} * {} = {}", unmarked, winning_num,
+             unmarked * winning_num);
     Ok(())
 }
