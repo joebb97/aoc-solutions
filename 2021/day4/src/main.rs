@@ -73,8 +73,8 @@ fn apply_move<'a>(num_called: &'a u8, boards: &'a mut Boards) -> Option<&'a Boar
     boards
         .iter_mut()
         .enumerate()
-        .fold(None, |winning_board, (idx, board)| {
-            if let Some(ref w) = winning_board {
+        .fold(None, |winning_board, (_, board)| {
+            if winning_board.is_some() {
                 return winning_board;
             }
             if let Some(ent) = board.get_mut(num_called) {
