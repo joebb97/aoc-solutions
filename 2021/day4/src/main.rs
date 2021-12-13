@@ -1,28 +1,29 @@
+use std::collections::HashMap;
 use std::io::{self, BufRead, StdinLock};
 
 #[derive(Debug)]
 struct Tile {
-    datum: u8,
+    row: u32,
+    col: u32,
     called: bool,
 }
 
-struct Coord {
-    x: u32,
-    y: u32,
-}
-
-type Board = Vec<Vec<Tile>>;
+type Board = HashMap<u8, Tile>;
+// map from bingo value to tile for quick lookups
 type Boards = Vec<Board>;
 
 fn get_boards(lines: std::io::Lines<StdinLock<'_>>) -> Boards {
-    let mut board_length: Option<usize> = None;
+    let mut board_length: Option<(usize, usize)> = None;
+    #[derive(Debug)]
     struct FoldState {
         cur_board: Board,
         all_boards: Boards,
+        cur_row: u32,
     }
     let starting_state = FoldState {
         cur_board: Board::new(),
         all_boards: Boards::new(),
+        cur_row: 0,
     };
     let boards: Boards = lines
         .fold(starting_state, |mut state, line| {
@@ -30,19 +31,28 @@ fn get_boards(lines: std::io::Lines<StdinLock<'_>>) -> Boards {
                 if line == "" {
                     return state;
                 }
-                if let None = board_length {
-                    board_length = Some(line.len());
-                }
-                let tile_vec: Vec<Tile> = line
-                    .split_whitespace()
-                    .map(|c| Tile {
-                        datum: c.parse().unwrap(),
-                        called: false,
+                line.split_whitespace()
+                    .enumerate()
+                    .map(|(y, c)| {
+                        let datum = c.parse().unwrap();
+                        (datum, y)
                     })
-                    .collect();
-                state.cur_board.push(tile_vec);
-                if state.cur_board.len() == board_length.unwrap() {
+                    .for_each(|(datum, y)| {
+                        let new_tile = Tile {
+                            row: state.cur_row,
+                            col: y as u32,
+                            called: false,
+                        };
+                        state.cur_board.insert(datum, new_tile);
+                    });
+                    state.cur_row += 1;
+                if let None = board_length {
+                    let len = state.cur_board.len();
+                    board_length = Some((len, len * len));
+                }
+                if state.cur_board.len() == board_length.unwrap().1 {
                     let mut new_state = FoldState {
+                        cur_row: 0,
                         cur_board: Board::new(),
                         all_boards: state.all_boards,
                     };
@@ -59,12 +69,37 @@ fn get_boards(lines: std::io::Lines<StdinLock<'_>>) -> Boards {
     return boards;
 }
 
-fn apply_moves(nums_called: Vec<u8>, boards: &mut Boards) -> (u32, u32) {
-    let (unmarked, winning_num) = (0, 0);
-    let new_boards = nums_called.iter().fold(boards, |cur_boards, num_called| {
-        cur_boards[0][0][0].called = true;
-        cur_boards
+fn apply_move(num_called: &u8, mut boards: Boards) -> Boards {
+    boards.iter_mut().for_each(|board| {
+        if let Some(ent) = board.get_mut(num_called) {
+            ent.called = true;
+        } else {
+            return
+        }
+        if let Some(ent) = board.get(num_called) {
+            let same_row_bingo = board.values().filter(|tile| {
+                tile.row == ent.row
+            }).all(|t| t.called);
+            let same_col = board.values().filter(|tile| {
+                tile.col == ent.col
+            });
+        }
     });
+    boards
+}
+
+fn apply_moves(nums_called: Vec<u8>, boards: Boards) -> (u32, u32) {
+    let (unmarked, winning_num) = (0, 0);
+    let something = nums_called.iter().fold(boards, |cur_boards, num_called| {
+        let new_board = apply_move(num_called, cur_boards);
+        new_board
+    });
+    for board in something {
+        for thing in board.iter() {
+            println!("{:?}", thing);
+        }
+        println!("");
+    }
     (unmarked, winning_num)
 }
 
@@ -81,9 +116,13 @@ fn main() -> Result<(), ()> {
             num
         })
         .collect();
-    let mut boards = get_boards(lines);
-    let (unmarked, winning_num) = apply_moves(nums_called, &mut boards);
-    println!("ans = unmarked * winning_num = {} * {} = {}", unmarked, winning_num,
-             unmarked * winning_num);
+    let boards = get_boards(lines);
+    let (unmarked, winning_num) = apply_moves(nums_called, boards);
+    println!(
+        "ans = unmarked * winning_num = {} * {} = {}",
+        unmarked,
+        winning_num,
+        unmarked * winning_num
+    );
     Ok(())
 }
