@@ -45,7 +45,7 @@ fn get_boards(lines: std::io::Lines<StdinLock<'_>>) -> Boards {
                         };
                         state.cur_board.insert(datum, new_tile);
                     });
-                    state.cur_row += 1;
+                state.cur_row += 1;
                 if let None = board_length {
                     let len = state.cur_board.len();
                     board_length = Some((len, len * len));
@@ -69,38 +69,52 @@ fn get_boards(lines: std::io::Lines<StdinLock<'_>>) -> Boards {
     return boards;
 }
 
-fn apply_move(num_called: &u8, mut boards: Boards) -> Boards {
-    boards.iter_mut().for_each(|board| {
-        if let Some(ent) = board.get_mut(num_called) {
-            ent.called = true;
-        } else {
-            return
-        }
-        if let Some(ent) = board.get(num_called) {
-            let same_row_bingo = board.values().filter(|tile| {
-                tile.row == ent.row
-            }).all(|t| t.called);
-            let same_col = board.values().filter(|tile| {
-                tile.col == ent.col
-            });
-        }
-    });
+fn apply_move<'a>(num_called: &'a u8, boards: &'a mut Boards) -> Option<&'a Board> {
     boards
+        .iter_mut()
+        .enumerate()
+        .fold(None, |winning_board, (idx, board)| {
+            if let Some(ref w) = winning_board {
+                return winning_board;
+            }
+            if let Some(ent) = board.get_mut(num_called) {
+                ent.called = true;
+            }
+            if let Some(ent) = board.get(num_called) {
+                let same_row_bingo = board
+                    .values()
+                    .filter(|tile| tile.row == ent.row)
+                    .all(|t| t.called);
+                let same_col_bingo = board
+                    .values()
+                    .filter(|tile| tile.col == ent.col)
+                    .all(|t| t.called);
+                if same_col_bingo || same_row_bingo {
+                    return Some(board);
+                }
+            }
+            winning_board
+        })
 }
 
-fn apply_moves(nums_called: Vec<u8>, boards: Boards) -> (u32, u32) {
-    let (unmarked, winning_num) = (0, 0);
-    let something = nums_called.iter().fold(boards, |cur_boards, num_called| {
-        let new_board = apply_move(num_called, cur_boards);
-        new_board
-    });
-    for board in something {
-        for thing in board.iter() {
-            println!("{:?}", thing);
+fn apply_moves(nums_called: Vec<u8>, mut boards: Boards) -> (u32, u32) {
+    let ans: Option<(u32, u32)> = nums_called.iter().fold(None, |cur_ans, num_called| {
+        if let Some(_) = cur_ans {
+            return cur_ans;
         }
-        println!("");
-    }
-    (unmarked, winning_num)
+        let winning_board = apply_move(num_called, &mut boards);
+        if let Some(wb) = winning_board {
+            let unmarked_sum: u32 = wb
+                .iter()
+                .filter(|(_, v)| !v.called)
+                .map(|tup| *tup.0 as u32)
+                .sum();
+            Some((unmarked_sum, *num_called as u32))
+        } else {
+            cur_ans
+        }
+    });
+    ans.unwrap()
 }
 
 fn main() -> Result<(), ()> {
