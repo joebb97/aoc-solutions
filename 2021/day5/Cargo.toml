@@ -7,3 +7,6 @@ edition = "2018"
 [[bin]]
 name = "day5pt2"
 path = "src/main2.rs"
+
+[dependencies]
+itertools = "*"
