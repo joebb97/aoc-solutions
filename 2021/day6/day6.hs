@@ -1,4 +1,3 @@
-import Data.List (sort, group)
 import System.Environment (getArgs)
 import Data.Char (digitToInt, isDigit)
 
