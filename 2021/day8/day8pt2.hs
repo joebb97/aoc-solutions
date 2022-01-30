@@ -12,7 +12,7 @@ main = do
   let measurements = getMeasurements contents
   let outDigits = map parseOutput measurements
   let res = fmap sum $ sequence outDigits
-  print("res=",res)
+  print ("res=", res)
 
 debugMeasurements =
   getMeasurements
@@ -20,12 +20,12 @@ debugMeasurements =
 
 parseOutput :: Measurement -> Maybe Int
 parseOutput meas = do
-    outDigits <- sequence digits
-    let asStr = concat . map show $ outDigits
-    return (read asStr)
-    where
-      mapping = solveWireMappings meas
-      digits = map (applyMapping mapping) $ output meas
+  outDigits <- sequence digits
+  let asStr = concat . map show $ outDigits
+  return (read asStr)
+  where
+    mapping = solveWireMappings meas
+    digits = map (applyMapping mapping) $ output meas
 
 getMeasurements :: String -> [Measurement]
 getMeasurements contents =
