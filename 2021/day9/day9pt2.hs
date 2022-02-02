@@ -1,10 +1,10 @@
 import Data.Char (digitToInt, isDigit)
 import qualified Data.List as List
 import qualified Data.Map as Map
+import qualified Data.Maybe as Maybe
 import qualified Data.Ord as Ord
 import qualified Data.Set as Set
 import qualified Data.Tuple as Tuple
-import qualified Data.Maybe as Maybe
 
 main :: IO ()
 main = do
@@ -12,10 +12,15 @@ main = do
   let board = getBoard contents
   -- mapM_ print $ Map.toList . tiles $ board
   let lowestPoints = lowPoints board
-  let biggestBasins = product . take 3 . reverse . List.sort . map (\lp -> length $ biggestNeighbors lp board) $ lowestPoints
-  print("res=",biggestBasins)
+  let biggestBasins =
+        product .
+        take 3 .
+        reverse . List.sort . map (\lp -> length $ biggestNeighbors lp board) $
+        lowestPoints
+  print ("res=", biggestBasins)
 
-debugBoard = "2199943210\n\
+debugBoard =
+  "2199943210\n\
              \3987894921\n\
              \9856789892\n\
              \876789678\n\
@@ -23,7 +28,9 @@ debugBoard = "2199943210\n\
 
 lowPoints :: Board -> [Coord]
 lowPoints board = Map.keys boardLowPoints
-    where boardLowPoints = Map.filterWithKey (\coord val -> isLowPoint coord board) $ tiles board
+  where
+    boardLowPoints =
+      Map.filterWithKey (\coord val -> isLowPoint coord board) $ tiles board
 
 getBoard :: String -> Board
 getBoard contents =
@@ -55,7 +62,7 @@ isLowPoint coord board = allLess
 
 getNeighbors :: Coord -> [Coord]
 getNeighbors coord = neighbors
-    where 
+  where
     neighbors =
       [ (x + xdiff, y + ydiff)
       | let eachDir = [(1, 0), (-1, 0), (0, 1), (0, -1)]
@@ -65,16 +72,22 @@ getNeighbors coord = neighbors
 
 biggestNeighbors :: Coord -> Board -> Set.Set Coord
 biggestNeighbors coord board = Set.union justCoord friends
-    where
-      neighbors = getNeighbors coord
-      boardTiles = tiles board
-      thisTile = Map.lookup coord boardTiles
-      bigger = filter (\c -> 
-        let coordVal = Map.lookup c boardTiles
-        in coordVal > thisTile && coordVal < Just 9) neighbors
-      justCoord = Set.insert coord Set.empty
-      friends = foldr (\c acc -> Set.union acc $ biggestNeighbors c board) justCoord bigger
-
+  where
+    neighbors = getNeighbors coord
+    boardTiles = tiles board
+    thisTile = Map.lookup coord boardTiles
+    bigger =
+      filter
+        (\c ->
+           let coordVal = Map.lookup c boardTiles
+            in coordVal > thisTile && coordVal < Just 9)
+        neighbors
+    justCoord = Set.insert coord Set.empty
+    friends =
+      foldr
+        (\c acc -> Set.union acc $ biggestNeighbors c board)
+        justCoord
+        bigger
 
 type Coord = (Int, Int)
 
@@ -89,4 +102,3 @@ data Board =
   deriving (Show)
 
 windowed m = foldr (zipWith (:)) (repeat []) . take m . tail
-
