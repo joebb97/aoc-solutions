@@ -1,0 +1,59 @@
+("ab", // actually 1
+    [(1,[TopRight,BotRight])])
+        possibilities -> [TopRight('ab'), BotRight('ab')]
+("eafb", // actualy 4
+    [(4,[TopLeft,Mid,TopRight,BotRight])]),
+        possibilites -> [TopLeft('eafb'), Mid('eafb'), TopRight('ab'), BotRight('ab')]
+("dab", // actually 7
+    [(7,[Top,TopRight,BotRight])]),
+        possibilites -> [Top("dab"), Mid('eafb'), TopRight("ab"), BotRight("ab)]
+("acedgfb", // actually 8
+    [(8,[TopRight,BotRight,Mid,Bot,Top,BotLeft,TopLeft])]),
+        possibilites -> [Top("dab"), Mid("eafb"), TopRight("ab"), BotRight("ab"), Bot("abcdefg"), BotLeft("abcdefg")]
+        -- iter 1
+        by possibility -> [TopRight("ab"), BotRight("ab"), Top("dab"), Mid("eafb"), Bot("abcdefg"), BotLeft("abcdefg")]
+        pruned         -> [TopRight("ab"), BotRight("ab"), Top("d"), Mid("ef"), Bot("cdefg"), BotLeft("cdefg")]
+        -- iter 1
+        by possibility -> [Top("d"), TopRight("ab"), BotRight("ab"), Mid("ef"), Bot("cdefg"), BotLeft("cdefg")]
+        pruned         -> [Top("d"), TopRight("ab"), BotRight("ab"), Mid("ef"), Bot("cg"), BotLeft("cg")]
+
+
+"cg" -> "cdfbe" -> "c"
+---- don't actually matter
+("cdfbe", // actually 5
+    [(2,[Top,TopRight,Mid,BotLeft,Bot]),
+        these -> [Top("cdfbe"), TopRight("cdfbe"), Mid("cdfbe"), BotLeft("cdfbe"), Bot ("cdfbe")]
+        merged -> [Top("dab"), TopRight("ab"), Mid("ef"), Bot("c"), BotLeft("c")] -> fail
+     (3,[Top,TopRight,Mid,BotRight,Bot]),
+        these = [Top(cdfbe),TopRight(cdfbe),Mid(cdfbe),BotRight(cdfbe),Bot(cdfbe)]),
+        merged -> [Top(d), TopRight(b), Mid(ef), BotRight(b), BotLeft("cg")] -> failed
+     (5,[Top,TopLeft,Mid,BotRight,Bot])]),
+        these -> [Top("cdfbe"), TopLeft("cdfbe"), Mid("cdfbe"), BotRight("cdfbe"), Bot("cdfbe")]
+        merged -> [Top("d"), TopRight("ab"), TopLeft("cdfbe"), Mid("ef"), BotRight("b"), Bot("c"")]
+("gcdfa", // actually 2
+    [(2,[Top,TopRight,Mid,BotLeft,Bot]),
+     (3,[Top,TopRight,Mid,BotRight,Bot]),
+     (5,[Top,TopLeft,Mid,BotRight,Bot])]),
+        union -> [Top, TopRight, TopLeft, Mid, BotRight, BotLeft, Bot]
+("fbcad", // actually 3
+    [(2,[Top,TopRight,Mid,BotLeft,Bot]),
+     (3,[Top,TopRight,Mid,BotRight,Bot]),
+     (5,[Top,TopLeft,Mid,BotRight,Bot])]),
+        union -> [Top, TopRight, TopLeft, Mid, BotRight, BotLeft, Bot]
+("cefabd", // actually 9
+    [(0,[Top,TopLeft,BotLeft,Bot,BotRight,TopRight]),
+     (6,[BotRight,Mid,Bot,Top,BotLeft,TopLeft]),
+     (9,[TopRight,BotRight,Mid,Bot,Top,TopLeft])]),
+        union -> [Top, TopRight, TopLeft, Mid, BotRight, BotLeft, Bot]
+("cdfgeb", // actually 6
+    [(0,Top,TopLeft,BotLeft,Bot,BotRight,TopRight]),
+     (6,[BotRight,Mid,Bot,Top,BotLeft,TopLeft]),
+     (9,[TopRight,BotRight,Mid,Bot,Top,TopLeft])]),
+        union -> [Top, TopRight, TopLeft, Mid, BotRight, BotLeft, Bot]
+("cagedb", // actually 0
+    [(0,[Top,TopLeft,BotLeft,Bot,BotRight,TopRight]),
+     (6,[BotRight,Mid,Bot,Top,BotLeft,TopLeft]),
+     (9,[TopRight,BotRight,Mid,Bot,Top,TopLeft])]),
+        union -> [Top, TopRight, TopLeft, Mid, BotRight, BotLeft, Bot]
+
+merge (known "ef") (unknown "cdfbe") = "ef"

@@ -1,3 +1,4 @@
 target/
 *.hi
 *.o
+*.ho
