@@ -53,18 +53,18 @@ int main() {
     auto &from = stacks[move[1] - 1];
     auto &to = stacks[move[2] - 1];
     for (int i = 0; i < amt; ++i) {
-        auto top = from.back();
-        from.pop_back();
-        crane.push_front(top);
+      auto top = from.back();
+      from.pop_back();
+      crane.push_front(top);
     }
     while (!crane.empty()) {
-        auto to_push = crane.front();
-        crane.pop_front();
-        to.push_back(to_push);
+      auto to_push = crane.front();
+      crane.pop_front();
+      to.push_back(to_push);
     }
   }
 
-  for (const auto &stack: stacks) {
-      cout << stack.back();
+  for (const auto &stack : stacks) {
+    cout << stack.back();
   }
 }
